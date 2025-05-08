@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybersecurity Best Practices Quiz</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .question { margin-bottom: 20px; }
+        .question h3 { margin: 0; }
+        .answers { list-style-type: none; padding: 0; }
+        .answers li { margin: 5px 0; }
+        .feedback { display: none; margin-top: 10px; }
+        .progress-bar { width: 100%; background-color: #f3f3f3; border: 1px solid #ccc; margin-bottom: 20px; }
+        .progress { width: 0; height: 20px; background-color: #4caf50; }
+        .summary { display: none; margin-top: 20px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Cybersecurity Best Practices Quiz</h1>
+    <div class="progress-bar"><div class="progress"></div></div>
+    <div id="quiz"></div>
+    <button onclick="submitQuiz()">Submit</button>
+    <button onclick="resetQuiz()">Reset</button>
+    <div class="summary">
+        <h2>Summary</h2>
+        <p id="score"></p>
+        <p id="pass-fail"></p>
+        <button onclick="downloadResults()">Download Results</button>
+    </div>
+    <script>
+        const questions = [
+            {
+                question: "What is the most secure way to create a password?",
+                answers: [
+                    "Use your pet’s name and birth year",
+                    "Use a mix of letters, numbers, and symbols",
+                    "Use your favorite sports team",
+                    "Use the word “password” with a number"
+                ],
+                correct: 1,
+                feedback: "Using a mix of letters, numbers, and symbols makes your password harder to guess or crack."
+            },
+            {
+                question: "What should you do if you receive an email from an unknown sender with an attachment?",
+                answers: [
+                    "Open it to see what it is",
+                    "Forward it to your friends",
+                    "Delete it or report it as phishing",
+                    "Reply asking who they are"
+                ],
+                correct: 2,
+                feedback: "Unknown attachments can contain malware. It's best to delete or report suspicious emails."
+            },
+            {
+                question: "Which of the following is a sign of a phishing website?",
+                answers: [
+                    "HTTPS in the URL",
+                    "A familiar logo",
+                    "Misspelled domain name (e.g., g00gle.com)",
+                    "A padlock icon in the address bar"
+                ],
+                correct: 2,
+                feedback: "Phishing sites often use lookalike domains to trick users into entering personal information."
+            },
+            {
+                question: "Why is it important to update your software regularly?",
+                answers: [
+                    "To get new features",
+                    "To improve performance",
+                    "To fix security vulnerabilities",
+                    "All of the above"
+                ],
+                correct: 3,
+                feedback: "Updates often include security patches, performance improvements, and new features."
+            },
+            {
+                question: "What is two-factor authentication (2FA)?",
+                answers: [
+                    "Logging in with two different passwords",
+                    "Using a backup email to log in",
+                    "A second layer of security using something you know and something you have",
+                    "Logging in from two devices at once"
+                ],
+                correct: 2,
+                feedback: "2FA combines something you know (like a password) with something you have (like a phone or token)."
+            }
+        ];
+
+        let shuffledQuestions = [];
+
+        function shuffleQuestions() {
+            shuffledQuestions = questions.sort(() => Math.random() - 0.5);
+        }
+
+        function loadQuiz() {
+            shuffleQuestions();
+            const quizContainer = document.getElementById('quiz');
+            quizContainer.innerHTML = '';
+            shuffledQuestions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('question');
+                questionDiv.innerHTML = `
+                    <h3>${index + 1}. ${q.question}</h3>
+                    <ul class="answers">
+                        ${q.answers.map((answer, i) => `
+                            <li>
+                                <label>
+                                    <input type="radio" name="question${index}" value="${i}">
+                                    ${answer}
+                                </label>
+                            </li>
+                        `).join('')}
+                    </ul>
+                    <div class="feedback" id="feedback${index}">${q.feedback}</div>
+                `;
+                quizContainer.appendChild(questionDiv);
+            });
+            updateProgressBar();
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            shuffledQuestions.forEach((q, index) => {
+                const selected = document.querySelector(`input[name="question${index}"]:checked`);
+                if (selected && parseInt(selected.value) === q.correct) {
+                    score++;
+                    document.getElementById(`feedback${index}`).style.display = 'block';
+                } else {
+                    document.getElementById(`feedback${index}`).style.display = 'block';
+                }
+            });
+            const totalQuestions = shuffledQuestions.length;
+            const pass = score / totalQuestions >= 0.8;
+            document.getElementById('score').innerText = `You scored ${score} out of ${totalQuestions}.`;
+            document.getElementById('pass-fail').innerText = pass ? 'Pass' : 'Fail';
+            document.querySelector('.summary').style.display = 'block';
+        }
+
+        function resetQuiz() {
+            loadQuiz();
+            document.querySelector('.summary').style.display = 'none';
+            document.querySelectorAll('.feedback').forEach(feedback => feedback.style.display = 'none');
+        }
+
+        function updateProgressBar() {
+            const totalQuestions = shuffledQuestions.length;
+            const answeredQuestions = document.querySelectorAll('input[type="radio"]:checked').length;
+            const progress = (answeredQuestions / totalQuestions) * 100;
+            document.querySelector('.progress').style.width = `${progress}%`;
+        }
+
+        function downloadResults() {
+            const score = document.getElementById('score').innerText;
+            const passFail = document.getElementById('pass-fail').innerText;
+            const results = `Quiz Results:\n${score}\n${passFail}`;
+            const blob = new Blob([results], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'quiz_results.txt';
+            link.click();
+        }
+
+        document.addEventListener('change', updateProgressBar);
+        window.onload = loadQuiz;
+    </script>
+</body>
+</html>
